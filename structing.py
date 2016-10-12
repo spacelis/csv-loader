@@ -85,6 +85,7 @@ class ColumnDef(object):
         'Integer':  'Integer',
         'String':   'String(50)',
         'Boolean':  'Boolean',
+        'Bool':  'Boolean',
         'Date':     'Date',
         'Float':    'Float',
         'DateTime': 'DateTime'
