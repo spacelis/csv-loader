@@ -9,10 +9,17 @@ Users can change the layout accordingly and the loading command will adjust to t
 Usage
 =====
 
-First run `python structing.py plan.py file1.csv file2.csv` to generate a plan.
+First run 
+```
+python structing.py <plan.py> file1.csv [file2.csv [...]]
+``` 
+to generate a plan.
 Then make any modification to the plan accordingly, such as adjust the names and types.
-Then run `python [-c] [-b BUFFERSIZE] dataloader.py plan.py postgresql://...` to
-load the tables to the database given the URL.
+Then run 
+```
+python dataloader.py [-c] [-b BUFFERSIZE] <plan.py> <postgresql://...>
+``` 
+to load the tables to the database given the URL.
 
 This tool is based on SQLAlchemy which allow it to be used for different database management system,
 such as PostgreSQL, MySQL, SQLite.
