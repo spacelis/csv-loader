@@ -85,12 +85,14 @@ class ColumnDef(object):
 
     TYPEMAPPING = {
         'Integer':  'Integer',
-        'String':   'String(50)',
+        'String':   'String',
         'Boolean':  'Boolean',
         'Bool':  'Boolean',
         'Date':     'Date',
         'Float':    'Float',
-        'DateTime': 'DateTime'
+        'DateTime': 'DateTime',
+        'Decimal': 'Numeric',
+
     }
 
 
