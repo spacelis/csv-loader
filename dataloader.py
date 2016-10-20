@@ -14,14 +14,14 @@ import click
 import sqlalchemy as sa
 from structing import CSVFile
 from utils import aggregator
-from utils import logging, LoggingThrottle, LOG_LVL_THROTTLED
+from utils import logging, LoggingThrottle
 
 
 logger = logging.getLogger(__name__)
 logger.addFilter(LoggingThrottle(10))
 
 
-def prepare_db(pg_url, meta):
+def prepare_db(pg_url, meta, force_recreate=False):
     """ Prepare the database and create all tables
 
     :pg_url: TODO
@@ -30,11 +30,13 @@ def prepare_db(pg_url, meta):
 
     """
     engine = sa.create_engine(pg_url)
+    if force_recreate:
+        meta.drop_all(engine)
     meta.create_all(engine)
     return engine
 
 
-def load_data(engine, all_tables, all_files, batch_size=10000, clear=False):
+def load_data(engine, all_tables, all_files, batch_size=10000):
     """ Load data to the data base
 
     :arg1: TODO
@@ -42,28 +44,24 @@ def load_data(engine, all_tables, all_files, batch_size=10000, clear=False):
 
     """
     conn = engine.connect()
-    for table, (file_name, headers) in zip(all_tables, all_files):
-        if clear:
-            conn.execute(table.delete())
-
-        csvfile = CSVFile(file_name)
-        csvfile.guess_structure()
-        csvfile.headers = headers
+    for table, csvfile in zip(all_tables, all_files):
         with csvfile:
             cnt = 0
             for batch_rows in aggregator(csvfile.row_set.dicts(), batch_size):
                 conn.execute(table.insert(), batch_rows)
                 cnt += len(batch_rows)
-                logger.tinfo('%d rows loaded from %s', cnt, file_name)
-            logger.info('FINISHED: %d rows loaded from %s', cnt, file_name)
+                logger.tinfo('%d rows loaded from %s', cnt, csvfile.file_name)
+            logger.info('FINISHED: %d rows loaded from %s', cnt, csvfile.file_name)
 
 
 @click.command()
-@click.option('-b', '--buffer-size', default=10000, help='The size of batch for inserting operation.')
-@click.option('-c', '--clear/--no-clear', default=False, help='Clear the table before loading')
+@click.option('-b', '--buffer-size', default=10000,
+              help='The size of batch for inserting operation.')
+@click.option('-f', '--force-recreate/--no-force-recreate', default=False,
+              help='Force recreate the table before loading')
 @click.argument('spec_file', nargs=1)
 @click.argument('pg_url', nargs=1)
-def commandline(spec_file, pg_url, buffer_size, clear):
+def commandline(spec_file, pg_url, buffer_size, force_recreate):
     """ Bulk Loading the data according to the spec
 
     :spec: The spec of the csv to load in the db
@@ -71,8 +69,8 @@ def commandline(spec_file, pg_url, buffer_size, clear):
 
     """
     spec = imp.load_source('', spec_file)
-    engine = prepare_db(pg_url, spec.meta)
-    load_data(engine, spec.all_tables, spec.all_files, buffer_size, clear)
+    engine = prepare_db(pg_url, spec.meta, force_recreate)
+    load_data(engine, spec.all_tables, spec.all_files, buffer_size)
 
 
 if __name__ == "__main__":

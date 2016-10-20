@@ -37,6 +37,8 @@ class Specification(object):
         '''
         from sqlalchemy import MetaData, Column, Table
         from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean
+        import messytables.types
+        from structing import CSVFile
 
         meta = MetaData()
 
@@ -52,8 +54,8 @@ class Specification(object):
         ]
         all_files = [
             {% for t in table_defs -%}
-            ('{{ t.file_name }}', {{ t.render_headers() }}){{ ',' if not loop.last else '' }}
-            {%- endfor %}
+            {{ t.csvfile }}{{ ',' if not loop.last else '' }}
+            {% endfor %}
         ]
         '''
     ))
@@ -131,7 +133,7 @@ class TableDef(object):
         '''
     ))
 
-    def __init__(self, table_name, column_defs, file_name):
+    def __init__(self, table_name, column_defs, csvfile):
         """ Make a table definition
 
         :table_name: TODO
@@ -140,7 +142,7 @@ class TableDef(object):
         """
         self.table_name = table_name
         self.column_defs = column_defs
-        self.file_name = file_name
+        self.csvfile = csvfile
 
     def render_headers(self):
         """ Return new headers for loading
@@ -164,14 +166,20 @@ class CSVFile(object):
 
     """A structure containing metadata of a csv file"""
 
-    def __init__(self, file_name, nullsyms=('',)):
+    def __init__(self, file_name, headers=None, offset=None, types=None):
         """TODO: to be defined1. """
         self.file_name = file_name
         self.fin = None
         self.row_set = None
-        self.headers = None
-        self.offset = None
-        self.types = None
+        if headers is None or offset is None:
+            self.guess_structure()
+        else:
+            self.headers = headers
+            self.offset = offset
+        if types is None:
+            self.guess_types()
+        else:
+            self.types = types
 
     def guess_structure(self):
         """TODO: Docstring for start.
@@ -182,6 +190,17 @@ class CSVFile(object):
             row_set = mst.CSVRowSet('', fin)
             self.offset, self.headers = mst.headers_guess(row_set.sample)
 
+    def guess_types(self):
+        """TODO: Docstring for start.
+        :returns: TODO
+
+        """
+        with open(self.file_name, 'rb') as fin:
+            row_set = mst.CSVRowSet('', fin)
+            row_set.register_processor(mst.headers_processor(self.headers))
+            row_set.register_processor(mst.offset_processor(self.offset + 1))
+            self.types = mst.type_guess(row_set.sample, strict=True)
+
     def _prepare(self):
         """TODO: Docstring for prepare.
 
@@ -189,13 +208,8 @@ class CSVFile(object):
         :returns: TODO
 
         """
-        assert self.row_set, 'The row_set is not ready.'
-        if self.headers is None:
-            raise ValueError('')
         self.row_set.register_processor(mst.headers_processor(self.headers))
         self.row_set.register_processor(mst.offset_processor(self.offset + 1))
-
-        self.types = mst.type_guess(self.row_set.sample, strict=True)
         self.row_set.register_processor(mst.types_processor(self.types))
 
         logger.debug("File: %s", self.file_name)
@@ -215,8 +229,6 @@ class CSVFile(object):
         :returns: TODO
 
         """
-        if self.headers is None:
-            self.guess_structure()
         self.fin = open(self.file_name, 'rb')
         self.row_set = mst.CSVRowSet('', self.fin)
         self._prepare()
@@ -233,6 +245,18 @@ class CSVFile(object):
         """
         self.close()
 
+    def __str__(self):
+        """ Serializing
+        :returns: TODO
+
+        """
+        return """CSVFile({0}, {1}, {2}, {3})""".format(
+            repr(self.file_name),
+            repr(self.headers),
+            repr(self.offset),
+            '[{0}]'.format(', '.join(['{0}.{1}'.format(t.__module__, t.__class__.__name__) for t in self.types]))
+            )
+
 
 def table_schema(file_name):
     """ Generate table schema for the csv file
@@ -241,7 +265,7 @@ def table_schema(file_name):
     with CSVFile(file_name) as csvfile:
         table_name = mk_dbobj_name(basename(file_name).split('.')[0], 'T')
         column_defs = [ColumnDef(h, t) for h, t in zip(csvfile.headers, csvfile.types)]
-        table_def = TableDef(table_name, column_defs, file_name)
+        table_def = TableDef(table_name, column_defs, csvfile)
         logger.debug('Table Def: %s', table_def)
         return table_def
 
