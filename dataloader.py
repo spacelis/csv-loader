@@ -10,6 +10,7 @@ Description:
 
 import sys
 import imp
+from time import time
 import click
 import sqlalchemy as sa
 from structing import CSVFile
@@ -43,15 +44,19 @@ def load_data(engine, all_tables, all_files, batch_size=10000):
     :returns: TODO
 
     """
+    total_start = time()
     conn = engine.connect()
     for table, csvfile in zip(all_tables, all_files):
         with csvfile:
             cnt = 0
+            file_start = time()
             for batch_rows in aggregator(csvfile.row_set.dicts(), batch_size):
                 conn.execute(table.insert(), batch_rows)
                 cnt += len(batch_rows)
                 logger.tinfo('%d rows loaded from %s', cnt, csvfile.file_name)
-            logger.info('FINISHED: %d rows loaded from %s', cnt, csvfile.file_name)
+            logger.info('FINISHED: %d rows loaded in %.2fs from %s',
+                        cnt, time() - file_start, csvfile.file_name)
+    logger.info('Suceeded: %d tables loaded in %.2fs', len(all_tables), time() - total_start)
 
 
 @click.command()
