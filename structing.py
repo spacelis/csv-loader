@@ -145,13 +145,14 @@ class TableDef(object):
         self.table_name = table_name
         self.column_defs = column_defs
         self.csvfile = csvfile
+        self.csvfile.headers = self.colnames()
 
-    def render_headers(self):
+    def colnames(self):
         """ Return new headers for loading
         :returns: TODO
 
         """
-        return repr([c.name for c in self.column_defs])
+        return [c.name for c in self.column_defs]
 
     def __str__(self):
         """ Render table definition
@@ -168,40 +169,33 @@ class CSVFile(object):
 
     """A structure containing metadata of a csv file"""
 
-    def __init__(self, file_name, headers=None, offset=None, types=None):
+    def __init__(self, file_name, headers, types, offset):
         """TODO: to be defined1. """
         self.file_name = file_name
         self.fin = None
         self.row_set = None
-        if headers is None or offset is None:
-            self.guess_structure()
-        else:
-            self.headers = headers
-            self.offset = offset
-        if types is None:
-            self.guess_types()
-        else:
-            self.types = types
+        self.offset = offset
+        self.headers = headers
+        self.types = types
 
-    def guess_structure(self):
+    @classmethod
+    def from_file(cls, file_name):
         """TODO: Docstring for start.
         :returns: TODO
 
         """
-        with open(self.file_name, 'rb') as fin:
+        with open(file_name, 'rb') as fin:
             row_set = mst.CSVRowSet('', fin)
-            self.offset, self.headers = mst.headers_guess(row_set.sample)
+            offset, headers = mst.headers_guess(row_set.sample)
+            row_set.register_processor(mst.headers_processor(headers))
+            row_set.register_processor(mst.offset_processor(offset + 1))
+            types = mst.type_guess(row_set.sample, strict=True)
+            return cls(file_name, headers, types, offset)
 
-    def guess_types(self):
-        """TODO: Docstring for start.
-        :returns: TODO
-
-        """
-        with open(self.file_name, 'rb') as fin:
-            row_set = mst.CSVRowSet('', fin)
-            row_set.register_processor(mst.headers_processor(self.headers))
-            row_set.register_processor(mst.offset_processor(self.offset + 1))
-            self.types = mst.type_guess(row_set.sample, strict=True)
+    @classmethod
+    def from_structure(cls, file_name, structure, offset=0):
+        headers, types = zip(*structure)
+        return cls(file_name, headers, types, offset)
 
     def _prepare(self):
         """TODO: Docstring for prepare.
@@ -247,16 +241,19 @@ class CSVFile(object):
         """
         self.close()
 
-    def __str__(self):
+    def __str__(self, headers=None):
         """ Serializing
         :returns: TODO
 
         """
-        return """CSVFile({0}, {1}, {2}, {3})""".format(
+        if headers is None:
+            headers = self.headers
+        return """CSVFile.from_structure({0}, {1}, {2})""".format(
             repr(self.file_name),
-            repr(self.headers),
-            repr(self.offset),
-            '[{0}]'.format(', '.join(['{0}.{1}'.format(t.__module__, t.__class__.__name__) for t in self.types]))
+            '[\n        {0}]'.format(',\n        '.join(
+                ['({0}, {1}.{2})'.format(repr(h), t.__module__, t.__class__.__name__)
+                 for h, t in zip(headers, self.types)])),
+            repr(self.offset)
             )
 
 
@@ -264,7 +261,7 @@ def table_schema(file_name):
     """ Generate table schema for the csv file
 
     """
-    with CSVFile(file_name) as csvfile:
+    with CSVFile.from_file(file_name) as csvfile:
         table_name = mk_dbobj_name(basename(file_name).split('.')[0], 'T')
         column_defs = [ColumnDef(h, t) for h, t in zip(csvfile.headers, csvfile.types)]
         table_def = TableDef(table_name, column_defs, csvfile)
