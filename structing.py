@@ -36,7 +36,7 @@ class Specification(object):
     template = Template(dedent(
         '''
         from sqlalchemy import MetaData, Column, Table
-        from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean
+        from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean, Numeric
         import messytables.types
         from structing import CSVFile
 
