@@ -36,7 +36,7 @@ class Specification(object):
     template = Template(dedent(
         '''
         from sqlalchemy import MetaData, Column, Table
-        from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean
+        from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean, Numeric
 
         meta = MetaData()
 
@@ -83,12 +83,14 @@ class ColumnDef(object):
 
     TYPEMAPPING = {
         'Integer':  'Integer',
-        'String':   'String(50)',
+        'String':   'String',
         'Boolean':  'Boolean',
         'Bool':  'Boolean',
         'Date':     'Date',
         'Float':    'Float',
-        'DateTime': 'DateTime'
+        'DateTime': 'DateTime',
+        'Decimal': 'Numeric',
+
     }
 
 
