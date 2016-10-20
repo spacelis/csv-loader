@@ -17,9 +17,10 @@ to generate a plan.
 Then make any modification to the plan accordingly, such as adjust the names and types.
 Then run 
 ```
-python dataloader.py [-c] [-b BUFFERSIZE] <plan.py> <postgresql://...>
+python dataloader.py [-f] [-b BUFFERSIZE] <plan.py> <postgresql://...>
 ``` 
-to load the tables to the database given the URL.
+to load the tables to the database given the URL.`-f` means recreate all tables, this
+may be useful if you need to re-upload after editing the table structures.
 
 This tool is based on SQLAlchemy which allow it to be used for different database management system,
 such as PostgreSQL, MySQL, SQLite.
