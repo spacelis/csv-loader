@@ -4,7 +4,7 @@ import click
 from sqlalchemy import create_engine, Table, MetaData, Index
 from sqlalchemy.engine import reflection
 
-from utils import logging
+from utils import logging, get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -17,16 +17,6 @@ def table_create_index(name, conn, dryrun=True):
         logger.info('Creating index for %s', idx_name)
         if not dryrun:
             Index(idx_name, col).create(conn)
-
-
-def get_connection(url):
-    """ Return an connection. """
-    passwd = urllib.quote(getpass.getpass())
-    if '@' in url:
-        url_pw = url.replace('@', passwd + '@')
-    else:
-        url_pw = url.replace('://', '://{0}:{1}@'.format(getpass.getuser(), passwd))
-    return create_engine(url_pw)
 
 
 @click.command()

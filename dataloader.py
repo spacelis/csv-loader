@@ -14,7 +14,7 @@ from time import time
 import click
 import sqlalchemy as sa
 from structing import CSVFile
-from utils import aggregator
+from utils import aggregator, get_connection
 from utils import logging, LoggingThrottle
 
 
@@ -30,7 +30,7 @@ def prepare_db(pg_url, meta, force_recreate=False):
     :returns: TODO
 
     """
-    engine = sa.create_engine(pg_url)
+    engine = sa.create_engine(get_connection(pg_url))
     if force_recreate:
         meta.drop_all(engine)
     meta.create_all(engine)
