@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
 def table_create_index(name, conn, dryrun=True):
     """ Creating indices on each column in the table """
     meta = MetaData(bind=conn)
-    table = Table(name, meta, autoload=True)
+    if '.' in name:
+        schema, name = name.split('.')
+    else:
+        schema = None
+    table = Table(name, meta, schema=schema, autoload=True)
     for col in table.columns:
         idx_name = '{tbl}_{col}_ix'.format(tbl=name, col=col.name)
         logger.info('Creating index for %s', idx_name)
