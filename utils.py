@@ -8,9 +8,12 @@ Description:
     Some utility functions for running the data loader.
 """
 
+import urllib
+import getpass
 import itertools as it
 import logging
 from time import time
+from sqlalchemy import create_engine
 
 LOG_LVL_THROTTLED=15
 logging.addLevelName(LOG_LVL_THROTTLED, 'TINFO')
