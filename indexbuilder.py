@@ -8,11 +8,8 @@ Github: http://github.com/spacelis
 Description: Adding indices to all columns for the given tables
 """
 
-import urllib
-import getpass
 import click
-from sqlalchemy import create_engine, Table, MetaData, Index
-from sqlalchemy.engine import reflection
+from sqlalchemy import Table, MetaData, Index
 
 from utils import logging, get_connection
 
