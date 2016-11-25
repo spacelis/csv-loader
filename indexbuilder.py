@@ -26,6 +26,8 @@ def table_create_index(name, conn, dryrun=True):
     else:
         schema = None
     table = Table(name, meta, schema=schema, autoload=True)
+    if dryrun:
+        logger.warn('This is just a dry run, use --no-dryrun to perform actual indexing')
     for col in table.columns:
         idx_name = '{tbl}_{col}_ix'.format(tbl=name, col=col.name)
         logger.info('Creating index for %s', idx_name)
