@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+File: indexbuilder.py
+Author: Wen Li
+Email: spacelis@gmail.com
+Github: http://github.com/spacelis
+Description: Adding indices to all columns for the given tables
+"""
+
 import urllib
 import getpass
 import click
