@@ -287,11 +287,11 @@ def specification(file_names):
 @click.command()
 @click.argument('output', nargs=1, type=click.Path(exists=False))
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-def make_schema(output, files):
+def console(output, files):
     """ Commandline for exporting a schema based on the given csv."""
     with open(output, 'w') as fout:
         fout.write(str(specification(files)))
 
 
 if __name__ == "__main__":
-    make_schema()
+    console()

@@ -66,7 +66,7 @@ def load_data(engine, all_tables, all_files, batch_size=10000):
               help='Force recreate the table before loading')
 @click.argument('spec_file', nargs=1)
 @click.argument('pg_url', nargs=1)
-def commandline(spec_file, pg_url, buffer_size, force_recreate):
+def console(spec_file, pg_url, buffer_size, force_recreate):
     """ Bulk Loading the data according to the spec
 
     :spec: The spec of the csv to load in the db
@@ -79,4 +79,4 @@ def commandline(spec_file, pg_url, buffer_size, force_recreate):
 
 
 if __name__ == "__main__":
-    commandline()
+    console()
