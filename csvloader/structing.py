@@ -14,7 +14,7 @@ from textwrap import dedent
 import click
 import messytables as mst
 from jinja2 import Template
-from utils import logging
+from csvloader.utils import logging
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Specification(object):
         from sqlalchemy import MetaData, Column, Table
         from sqlalchemy import Integer, String, Date, DateTime, Float, Boolean, Numeric
         import messytables.types
-        from structing import CSVFile
+        from csvloader.structing import CSVFile
 
         meta = MetaData()
 

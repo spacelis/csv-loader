@@ -11,7 +11,7 @@ Description: Adding indices to all columns for the given tables
 import click
 from sqlalchemy import Table, MetaData, Index
 
-from utils import logging, get_connection
+from csvloader.utils import logging, get_connection
 
 logger = logging.getLogger(__name__)
 
