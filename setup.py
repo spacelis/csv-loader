@@ -3,10 +3,10 @@
 
 from setuptools import setup
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open('HISTORY.md') as history_file:
     history = history_file.read()
 
 requirements = [
@@ -36,9 +36,9 @@ setup(
                  'csvloader'},
     entry_points={
         'console_scripts': [
-            'cl-struct=csvloader.structing:console'
-            'cl-upload=bakman.dataloader:console'
-            'cl-index=bakman.dataloader:console'
+            'cl-struct=csvloader.structing:console',
+            'cl-upload=csvloader.dataloader:console',
+            'cl-index=csvloader.indexbuilder:console'
         ]
     },
     include_package_data=True,
