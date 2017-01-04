@@ -169,7 +169,7 @@ class CSVFile(object):
 
     """A structure containing metadata of a csv file"""
 
-    def __init__(self, file_name, headers, types, offset, nullsyms=('', ' ')):
+    def __init__(self, file_name, headers, types, offset, nullsyms=('', ' '), delimiter=None):
         """TODO: to be defined1. """
         self.file_name = file_name
         self.fin = None
@@ -178,6 +178,7 @@ class CSVFile(object):
         self.headers = headers
         self.types = types
         self.nullsyms = nullsyms
+        self.delimiter = delimiter
 
     @classmethod
     def from_file(cls, file_name):
@@ -186,7 +187,7 @@ class CSVFile(object):
 
         """
         with open(file_name, 'rb') as fin:
-            row_set = mst.CSVRowSet('', fin)
+            row_set = mst.CSVRowSet('', fin, delimiter=self.delimiter)
             offset, headers = mst.headers_guess(row_set.sample)
             row_set.register_processor(mst.headers_processor(headers))
             row_set.register_processor(mst.offset_processor(offset + 1))
