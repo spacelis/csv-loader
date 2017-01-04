@@ -58,7 +58,7 @@ def get_connection(url):
     """ Return an connection. """
     passwd = urllib.quote(getpass.getpass())
     if '@' in url:
-        url_pw = url.replace('@', passwd + '@')
+        url_pw = url.replace('@', ':' + passwd + '@')
     else:
         url_pw = url.replace('://', '://{0}:{1}@'.format(getpass.getuser(), passwd))
     return create_engine(url_pw)
